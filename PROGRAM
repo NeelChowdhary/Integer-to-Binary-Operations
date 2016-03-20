@@ -1,0 +1,558 @@
+/** @file hw1.cpp
+ @author [Neel Chowdhary]
+ @date [1/14/2016]
+ 
+ */
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+/** @class Integer
+ @brief Stores an integer value using bits
+ 
+ This class is designed to mimic the int data type
+ 
+ */
+class Integer {
+public:
+    Integer();
+    Integer(unsigned int a);
+    
+    bool operator==(const Integer& rhs)const;
+    bool operator<(const Integer& rhs)const;
+    Integer& operator+=(const Integer& rhs);
+    Integer& operator*=(const Integer& rhs);
+    Integer& operator-=(const Integer& rhs);
+    Integer& operator++();
+    Integer& operator--();
+    Integer operator++(int arg);
+    Integer operator--(int arg);
+    Integer operator~()const;
+    Integer operator-()const;
+    Integer operator+()const;
+    Integer& operator&=(const Integer& rhs);
+    Integer& operator|=(const Integer& rhs);
+    Integer& operator^=(const Integer& rhs);
+    Integer& operator<<=(unsigned int);
+    Integer& operator>>=(unsigned int);
+    
+    void print_as_int()  const;
+    void print_as_bits() const;
+    
+private:
+    std::vector<bool> bit;
+    
+    void clean_up();
+};
+
+Integer& Integer::operator++(){
+    Integer temp = 1;
+    bit[0] = bit[0] + temp.bit[0];
+    return *this;
+}
+
+Integer& Integer::operator--(){
+    Integer temp = 1;
+    bit[0] = bit[0] - temp.bit[0];
+    return *this;
+}
+
+Integer Integer::operator+()const{
+    if(bit[bit.size()-1]==1){
+        return -*this;
+    }
+    else{
+        return *this;
+    }
+}
+
+Integer Integer::operator-() const{
+    Integer temp=*this;
+    for (unsigned int i = 0; i < temp.bit.size(); i++){
+        if (temp.bit[i] == 0){
+            temp.bit[i] = 1;
+        }
+        else{
+            temp.bit[i] = 0;
+        }
+    }
+    Integer temp2=1;
+    temp += temp2;
+    return temp;
+}
+
+Integer Integer::operator~() const{
+    Integer temp(*this);
+    for (unsigned int i = 0; i < temp.bit.size(); i++){
+        if (temp.bit[i] == 0){
+            temp.bit[i] = 1;
+        }
+        else{
+            temp.bit[i] = 0;
+        }
+    }
+    return *this;
+}
+
+Integer operator+(Integer lhs, const Integer& rhs){
+    return lhs+=rhs;
+}
+
+Integer operator-(Integer lhs, const Integer& rhs){
+    return lhs-=rhs;
+}
+
+Integer operator>>(Integer x, unsigned int shift){
+    return x>>=shift;
+}
+
+Integer& Integer::operator>>=(unsigned int shift){
+    while(shift>0){
+        bit.pop_back();
+        shift--;
+    }
+    return *this;
+}
+
+Integer operator<<(Integer x, unsigned int shift){
+    return x<<=shift;
+}
+
+Integer& Integer::operator<<=(unsigned int shift){
+    while(shift>0){
+        bit.push_back(0);
+        shift--;
+    }
+    return *this;
+}
+
+Integer operator^(Integer lhs, const Integer& rhs){
+    return lhs^=rhs;
+}
+
+Integer& Integer::operator^=(const Integer& rhs){
+    std::vector<bool>temp=rhs.bit;
+    if (bit.size() < temp.size()){
+        while(temp.size() > bit.size()){
+            bit.push_back(0);
+        }
+    }
+    if (bit.size() > temp.size()){
+        while(bit.size() > temp.size()){
+            temp.push_back(0);
+        }
+    }
+    for(unsigned int i=0;i<bit.size();i++){
+        if((bit[i]==0)&&(temp[i]==0)){
+            bit[i]=0;
+        }
+        if((bit[i]==0)&&(temp[i]==1)){
+            bit[i]=1;
+        }
+        if((bit[i]==1)&&(temp[i]==0)){
+            bit[i]=1;
+        }
+        if((bit[i]==1)&&(temp[i]==1)){
+            bit[i]=0;
+        }
+    }
+    return *this;
+}
+
+Integer operator|(Integer lhs, const Integer& rhs){
+    return lhs |= rhs;
+}
+
+Integer& Integer::operator|=(const Integer& rhs){
+    std::vector<bool>temp=rhs.bit;
+    if (bit.size() < temp.size()){
+        while(temp.size() > bit.size()){
+            bit.push_back(0);
+        }
+    }
+    if (bit.size() > temp.size()){
+        while(bit.size() > temp.size()){
+            temp.push_back(0);
+        }
+    }
+    for(unsigned int i=0;i<bit.size();i++){
+        if((bit[i]==0)&&(temp[i]==0)){
+            bit[i]=0;
+        }
+        else{
+            bit[i]=1;
+        }
+    }
+    return *this;
+}
+
+Integer operator&(Integer lhs, const Integer& rhs){
+    return lhs &= rhs;
+}
+
+Integer& Integer::operator&=(const Integer& rhs){
+    std::vector<bool>temp=rhs.bit;
+    if (bit.size() < temp.size()){
+        while(temp.size() > bit.size()){
+            bit.push_back(0);
+        }
+    }
+    if (bit.size() > temp.size()){
+        while(bit.size() > temp.size()){
+            temp.push_back(0);
+        }
+    }
+    for(unsigned int i=0; i<bit.size();i++){
+        if((bit[i]==0)&&(rhs.bit[i]==0)){
+            bit[i]=0;
+        }
+        else if(bit[i]!= rhs.bit[i]){
+            bit[i]=0;
+        }
+        else{
+            bit[i]=1;
+        }
+    }
+    return *this;
+}
+
+
+Integer& Integer::operator-=(const Integer& rhs){
+    std::vector<bool>temp=rhs.bit;
+    for(unsigned int i=0; i<temp.size();i++){
+        if(temp[i]==0){
+            temp[i]=1;
+        }
+        else{
+            temp[i]=0;
+        }
+    }
+    
+    if (bit.size() < temp.size()){
+        while(temp.size() > bit.size()){
+            bit.push_back(0);
+        }
+    }
+    if (bit.size() > temp.size()){
+        while(bit.size() > temp.size()){
+            temp.push_back(0);
+        }
+    }
+    for(unsigned int i=0;i<bit.size();i++){
+        bit[i]=bit[i]+temp[i];
+    }
+    return *this;
+}
+
+Integer Integer::operator++(int arg){
+    Integer current = *this;
+    (*this) += Integer(1);
+    return current;
+}
+
+Integer Integer::operator--(int arg){
+    Integer current = *this;
+    (*this) -= Integer(1);
+    return current;
+}
+
+bool Integer::operator==(const Integer& rhs)const{
+    if(bit.size()!= rhs.bit.size()){
+        return false;
+    }
+    for(unsigned int i=bit.size()-1; i>=0; i--){
+        if(bit[i]!=rhs.bit[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool operator!=(const Integer& lhs, const Integer& rhs){
+    return !(lhs==rhs);
+}
+
+bool Integer::operator<(const Integer& rhs)const{
+    if(bit.size()<rhs.bit.size()){
+        return true;
+    }
+    if(bit.size()>rhs.bit.size()){
+        return false;
+    }
+    for(unsigned int i=(bit.size()-1); i=0; i--){
+        if((bit[i]!=rhs.bit[i])&&rhs.bit[i]==1){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool operator<=(const Integer& lhs, const Integer& rhs){
+    return ((lhs==rhs)||(lhs<rhs));
+}
+
+bool operator>=(const Integer& lhs, const Integer& rhs){
+    return !(lhs<rhs);
+}
+
+bool operator>(const Integer& lhs, const Integer& rhs){
+    return !(lhs<=rhs);
+}
+
+
+void Integer::clean_up(){
+    bit.clear();
+}
+
+Integer::Integer(){
+    bit.assign(0,0);
+}
+
+Integer::Integer(unsigned int a){
+    while(a>0){
+        int x;
+        x = a%2;
+        bit.push_back(x);
+        a = a/2;
+    }
+}
+
+void Integer::print_as_bits()const{
+    std::cout << "(";
+    for(int i = bit.size()-1; i >= 0; i--){
+        std::cout << bit[i];
+    }
+    std:: cout<< ")_2";
+}
+
+void Integer::print_as_int()const{
+    int s = 0;
+    for(int i=0; i < bit.size(); i++){
+        s += (static_cast<int>(bit[i]) * pow(2,i));
+    }
+    std::cout<< s;
+}
+
+Integer& Integer::operator+=(const Integer& rhs){
+    std::vector<bool> temp = rhs.bit;
+    if (bit.size() < temp.size()){
+        while(temp.size() > bit.size()){
+            bit.push_back(0);
+        }
+    }
+    if (bit.size() > temp.size()){
+        while(bit.size() > temp.size()){
+            temp.push_back(0);
+        }
+    }
+    bool s=0;
+    for(int i=0; i < bit.size(); i++){
+        if(bit[i]&&temp[i]){
+            if(s){
+                bit[i]=1;
+            }
+            else{
+                bit[i]=0;
+            }
+            s=1;
+        }
+        else if(bit[i]== temp[i]){
+            if(s){
+                bit[i]=1;
+            }
+            else{
+                bit[i]=0;
+            }
+            s=0;
+        }
+        else if(bit[i]!= temp[i]){
+            if(s){
+                bit[i]=0;
+                s=1;
+            }
+            else{
+                bit[i]=1;
+                s=0;
+            }
+        }
+        
+    }
+    if(s){
+        bit.push_back(1);
+    }
+    return *this;
+}
+
+Integer& Integer::operator*=(const Integer& rhs){
+    std::vector<std::vector<bool>>vec(rhs.bit.size());
+    for(unsigned int i = 0; i < bit.size(); i++){
+        vec[i].assign(i,0);
+        for(int y=0; y<i;y++){
+            vec[i].push_back(0);
+        }
+        if(rhs.bit[i]==1){
+            for(unsigned int j=0; j<bit.size(); j++){
+                vec[i].push_back(bit[j]);
+            }
+        }
+    }
+    bit.clear();
+    for(unsigned int h=0;h<vec.size();h++){
+        if (bit.size() < vec[h].size()){
+            while(vec[h].size() > bit.size()){
+                bit.push_back(0);
+            }
+        }
+        if (bit.size() > vec[h].size()){
+            while(bit.size() > vec[h].size()){
+                vec[h].push_back(0);
+            }
+        }
+        bool s=0;
+        for(int i=0; i < bit.size(); i++){
+            if(bit[i]&&vec[h][i]){
+                if(s){
+                    bit[i]=1;
+                }
+                else{
+                    bit[i]=0;
+                }
+                s=1;
+            }
+            else if(bit[i]== vec[h][i]){
+                if(s){
+                    bit[i]=1;
+                }
+                else{
+                    bit[i]=0;
+                }
+                s=0;
+            }
+            else if(bit[i]!= vec[h][i]){
+                if(s){
+                    bit[i]=0;
+                    s=1;
+                }
+                else{
+                    bit[i]=1;
+                    s=0;
+                }
+            }
+            
+        }
+        if(s){
+            bit.push_back(1);
+        }
+    }
+    return *this;
+}
+
+
+
+Integer operator*(Integer lhs,const Integer& rhs){
+    return lhs*=rhs;
+}
+
+
+int main(){
+    // Obtain two integer values from the console
+    int int_value;
+    std::cout << "Please input integer a: ";
+    std::cin >> int_value;
+    Integer a = int_value; // Create Integer type with input value
+    std::cout << "The base-2 representation of a is: "; a.print_as_bits();
+    std::cout << std::endl;
+    
+    std::cout << "Please input an integer b: ";
+    std::cin >> int_value;
+    Integer b = int_value; // Create Integer type with input value
+    
+    std::cout << "The base-2 representation of b is: "; b.print_as_bits();
+    std::cout << std::endl;
+    
+    // Perform basic arithemtic
+    Integer plusequals = a; plusequals += b;
+    plusequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer minusequals = a; minusequals -= b;
+    minusequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer timesequals = a; timesequals *= b;
+    timesequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer plus = a + b; plus.print_as_bits(); std::cout << std::endl;
+    Integer minus = a - b; minus.print_as_bits(); std::cout << std::endl;
+    Integer times = a*b; times.print_as_bits(); std::cout << std::endl;
+    
+    
+    Integer prefix_increment = ++a; prefix_increment.print_as_bits();
+    std::cout << std::endl;
+    
+    Integer postfix_increment = a++; postfix_increment.print_as_bits();
+    std::cout << std::endl;
+    
+    Integer prefix_decrement = --a; prefix_decrement.print_as_bits();
+    std::cout << std::endl;
+    
+    Integer postfix_decrement = a--; postfix_decrement.print_as_bits();
+    std::cout << std::endl;
+    
+    
+    Integer negative = -a; negative.print_as_bits(); std::cout << std::endl;
+    Integer positive = +b; positive.print_as_bits(); std::cout << std::endl;
+    
+    // Obtain two more integer values from the console
+    std::cout << "Please input an integer c: ";
+    std::cin >> int_value;
+    Integer c = int_value; // Create Integer type with input value
+    
+    std::cout << "The base-2 representation of c is: "; c.print_as_bits();
+    std::cout << std::endl;
+    
+    std::cout << "Please input an integer d: ";
+    std::cin >> int_value;
+    Integer d = int_value; // Create Integer type with input value
+    
+    std::cout << "The base-2 representation of d is: "; d.print_as_bits();
+    std::cout << std::endl;
+    
+    // Comparison operators
+    if (c < d) std::cout << "c < d" << std::endl;
+    if (c <= d) std::cout << "c <= d" << std::endl;
+    if (c > d) std::cout << "c > d" << std::endl;
+    if (c >= d) std::cout << "c >= d" << std::endl;
+    if (c == d) std::cout << "c == d" << std::endl;
+    if (c != d) std::cout << "c != d" << std::endl;
+    
+    // Bitwise operators
+    Integer andequals = c; andequals &= d;
+    andequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer orequals = c; orequals |= d;
+    orequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer xorequals = c; xorequals ^= d;
+    xorequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer shiftupequals = c; shiftupequals <<= 2;
+    shiftupequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer shiftdownequals = c; shiftdownequals >>= 1;
+    shiftdownequals.print_as_bits(); std::cout << std::endl;
+    
+    Integer negation = ~c; negation.print_as_bits(); std::cout << std::endl;
+    
+    Integer the_and = c&d; the_and.print_as_bits(); std::cout << std::endl;
+    Integer the_or = c | d; the_or.print_as_bits(); std::cout << std::endl;
+    Integer the_xor = c^d; the_xor.print_as_bits(); std::cout << std::endl;
+    
+    Integer shift_up = c << 2; shift_up.print_as_bits();
+    std::cout << std::endl;
+    
+    Integer shift_down = d >> 2; shift_down.print_as_bits();
+    std::cout << std::endl;
+    
+    return 0;
+    
+}
